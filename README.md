@@ -1,4 +1,6 @@
 # Versioning
+[![Build Status](https://travis-ci.org/nsweeting/versioning.svg?branch=master)](https://travis-ci.org/nsweeting/versioning)
+[![Versioning Version](https://img.shields.io/hexpm/v/versioning.svg)](https://hex.pm/packages/versioning)
 
 Versioning provides a way for API's to remain backward compatible without the headache.
 
