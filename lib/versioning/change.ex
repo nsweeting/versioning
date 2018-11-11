@@ -16,11 +16,23 @@ defmodule Versioning.Change do
     quote do
       @behaviour Versioning.Change
 
+      @desc "No Description"
+
       def change(versioning) do
         versioning
       end
 
-      defoverridable Versioning.Change
+      defoverridable change: 1
+
+      @before_compile Versioning.Change
+    end
+  end
+
+  defmacro __before_compile__(_env) do
+    quote do
+      def __description__ do
+        @desc
+      end
     end
   end
 end

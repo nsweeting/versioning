@@ -18,7 +18,6 @@ defmodule VersioningTest do
     end
 
     test "will create a new versioning from a map" do
-      data = %Test{attr: "val"}
       versioning = Versioning.new("1", %{foo: "bar"})
 
       assert versioning.target == "1"
@@ -27,7 +26,6 @@ defmodule VersioningTest do
     end
 
     test "will create a new versioning from a list" do
-      data = %Test{attr: "val"}
       versioning = Versioning.new("1", ["foo"])
 
       assert versioning.target == "1"

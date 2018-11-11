@@ -3,7 +3,7 @@ defmodule Versioning.Schema do
   Documentation to come.
   """
 
-  alias Versioning.Compiler
+  alias Versioning.{Compiler, Changelog}
 
   @type change :: [atom() | {atom(), atom() | [atom()]}]
 
@@ -72,6 +72,7 @@ defmodule Versioning.Schema do
     quote do
       @versions Enum.reverse(@versions)
       @schema Enum.reverse(@schema)
+      @changelog Changelog.build(@schema)
 
       @doc """
       Runs a versioning through the schema.
@@ -80,14 +81,56 @@ defmodule Versioning.Schema do
         - versioning: A `Versioning` struct.
       """
       def run(versioning) do
-        do_run({:continue, versioning}, __versions__())
+        do_run({:continue, versioning}, @versions)
+      end
+
+      def __versions__ do
+        @versions
+      end
+
+      def __schema__ do
+        @schema
+      end
+
+      @doc """
+      Returns the changelog for the schema. The changelog represents a list of maps
+      that describe the history of the schema. For example:
+
+          [
+            %{
+              version: "1",
+              changes: [
+                %{type: Foo, descriptions: ["Changed this.", "Changed that."]}
+              ]
+            }
+          ]
+
+      The descriptions associated with each change can be attributed via the
+      @desc module attribute on a change module. Please see `Versioning.Change`
+      for more details.
+      """
+      def changelog do
+        @changelog
+      end
+
+      @doc """
+      Returns a changelog using the given options.
+
+      ## Options
+        * `:version` - A specific version within the changelog.
+        * `:type` - A specific type within the specified version.
+        * `:formatter` - A module that adheres to the `Versioning.Changelog.Formatter` behaviour.
+        By default, `Versioning` includes the `Versioning.Changelog.Markdown` formatter.
+      """
+      def changelog(opts) do
+        Changelog.with_options(@changelog, opts)
       end
 
       defp do_run({:halt, versioning}, _versions) do
         versioning
       end
 
-      defp do_run({_, versioning}, []) do
+      defp do_run(_, []) do
         raise Versioning.Error, "no matching version found in schema."
       end
 
@@ -108,14 +151,6 @@ defmodule Versioning.Schema do
 
       defp change(_version, _type, versioning) do
         {:continue, versioning}
-      end
-
-      def __versions__ do
-        @versions
-      end
-
-      def __schema__ do
-        @schema
       end
     end
   end

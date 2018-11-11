@@ -27,7 +27,7 @@ end
 
 See [HexDocs](https://hexdocs.pm/versioning) for additional documentation.
 
-## Example
+## Getting Started
 
 Lets say we have an `Article` struct that contains the boolean field `:active`. As time goes by, we recognize that there may be more kinds of statuses that our `Article`'s may have.
 
@@ -61,7 +61,10 @@ Lets create of first "versioning change". This change module will accept a `Vers
 ```elixir
 defmodule MyAPI.Versioning.ArticleStatus do
   use Versioning.Change
-  
+
+  @desc """
+  The boolean field "active" was removed in favour of the enum "status".
+  """
   def change(versioning) do
     {status, data} = Map.pop(versioning.data, :status)
     
@@ -79,6 +82,9 @@ end
 ```
 
 As you can see, our change module accepts the versioning, removes the new `:status` value, translates the status to our `:active` requirements, and updates the versioning data - returning a modified versioning.
+
+We can also use the `@desc` module attribute to attach a description of the change. This will be used when generating
+a changelog.
 
 ### Versioning Schema
 
@@ -147,3 +153,43 @@ For the example above, this would mean our `Article` struct would have been run 
 1. `MyAPI.Versioning.ArticleStatus`
 2. `MyAPI.Versioning.OtherArticleChange`
 3. `MyAPI.Versioning.SomeOtherArticleChange`
+
+### Versioning Changelog
+
+A changelog of our schema is also generated. This changelog represents a list of maps in the format (shortend for brevity):
+
+```elixir
+[
+  %{
+    version: "2019-01-01",
+    changes: [
+      %{
+        type: Article,
+        descriptions: [
+          "The boolean field `:active` was removed in favour of the enum `:status`."
+        ]
+      },
+      %{
+        type: User,
+        descriptions: [
+          "Some description 1.",
+          "Some description 2.",
+        ]
+      }
+    ]
+  }
+]
+```
+
+You can access the changelog through your schema:
+
+```elixir
+MyAPI.Versioning.changelog()
+```
+
+You can also access the changelog while providing options such as a formatter. Included with
+`Versioning` is a basic markdown formatter.
+
+```elixir
+MyAPI.Versioning.changelog(formatter: Versioning.Changelog.Markdown)
+```

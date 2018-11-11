@@ -1,6 +1,9 @@
-for x <- 1..16 do
+for x <- 1..17 do
   contents =
     quote do
+      use Versioning.Change
+
+      @desc "#{unquote(x)}"
       def change(version) do
         %{version | data: [:"#{unquote(x)}" | version.data]}
       end
@@ -26,7 +29,7 @@ defmodule Versioning.TestSchema do
     end
 
     change Baz do
-      [Test]
+      [TestChange17]
     end
   end
 

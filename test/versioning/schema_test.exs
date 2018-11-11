@@ -40,4 +40,61 @@ defmodule Versioning.SchemaTest do
       end)
     end
   end
+
+  describe "changelog/0" do
+    test "will return a changelog map of the schema" do
+      changelog = TestSchema.changelog()
+
+      first_version = List.first(changelog)
+      last_version = List.last(changelog)
+
+      assert first_version == %{
+               changes: [
+                 %{descriptions: ["16"], type: Any},
+                 %{descriptions: ["15"], type: Foo},
+                 %{descriptions: ["13", "14"], type: Bar},
+                 %{descriptions: ["17"], type: Baz}
+               ],
+               version: "5"
+             }
+
+      assert last_version == %{
+               changes: [
+                 %{descriptions: ["3"], type: Any},
+                 %{descriptions: ["2"], type: Foo},
+                 %{descriptions: ["1"], type: Bar},
+                 %{descriptions: [], type: Baz}
+               ],
+               version: "1"
+             }
+    end
+  end
+
+  describe "changelog/1" do
+    test "will return a specific version of the changelog with :version option" do
+      changelog = TestSchema.changelog(version: "1")
+
+      assert changelog == %{
+               changes: [
+                 %{descriptions: ["3"], type: Any},
+                 %{descriptions: ["2"], type: Foo},
+                 %{descriptions: ["1"], type: Bar},
+                 %{descriptions: [], type: Baz}
+               ],
+               version: "1"
+             }
+    end
+
+    test "will return a specific version and type of the changelog with :version and :type option" do
+      changelog = TestSchema.changelog(version: "1", type: Any)
+
+      assert changelog == %{descriptions: ["3"], type: Any}
+    end
+
+    test "will raise an ArgumentError when give a :type without a :version" do
+      assert_raise(ArgumentError, fn ->
+        TestSchema.changelog(type: Any)
+      end)
+    end
+  end
 end
