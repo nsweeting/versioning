@@ -11,8 +11,58 @@ defmodule Versioning.Schema do
 
   @type t :: [version()]
 
+  @doc """
+  Returns a list of versions within the schema.
+  """
+  @callback __versions__() :: [binary()]
+
+  @doc """
+  Returns a raw representation of the schema.
+  """
+  @callback __schema__() :: [version()]
+
+  @doc """
+  Runs a versioning through the schema.
+
+  ## Parameters
+    - versioning: A `Versioning` struct.
+  """
+  @callback run(versioning :: Versioning.t()) :: Versioning.t()
+
+  @doc """
+  Returns the changelog for the schema. The changelog represents a list of maps
+  that describe the history of the schema. For example:
+
+      [
+        %{
+          version: "1",
+          changes: [
+            %{type: Foo, descriptions: ["Changed this.", "Changed that."]}
+          ]
+        }
+      ]
+
+  The descriptions associated with each change can be attributed via the
+  `@desc` module attribute on a change module. Please see `Versioning.Change`
+  for more details.
+  """
+  @callback changelog() :: Versioning.Changelog.t()
+
+  @doc """
+  Returns a changelog using the given options.
+
+  ## Options
+    * `:version` - A specific version within the changelog.
+    * `:type` - A specific type within the specified version.
+    * `:formatter` - A module that adheres to the `Versioning.Changelog.Formatter` behaviour.
+    By default, `Versioning` includes the `Versioning.Changelog.Markdown` formatter.
+  """
+  @callback changelog(keyword()) :: any()
+
   defmacro __using__(_opts) do
     quote do
+      @behaviour Versioning.Schema
+
       import Versioning.Schema
 
       @versions []
@@ -74,12 +124,6 @@ defmodule Versioning.Schema do
       @schema Enum.reverse(@schema)
       @changelog Changelog.build(@schema)
 
-      @doc """
-      Runs a versioning through the schema.
-
-      ## Parameters
-        - versioning: A `Versioning` struct.
-      """
       def run(versioning) do
         do_run({:continue, versioning}, @versions)
       end
@@ -92,36 +136,10 @@ defmodule Versioning.Schema do
         @schema
       end
 
-      @doc """
-      Returns the changelog for the schema. The changelog represents a list of maps
-      that describe the history of the schema. For example:
-
-          [
-            %{
-              version: "1",
-              changes: [
-                %{type: Foo, descriptions: ["Changed this.", "Changed that."]}
-              ]
-            }
-          ]
-
-      The descriptions associated with each change can be attributed via the
-      @desc module attribute on a change module. Please see `Versioning.Change`
-      for more details.
-      """
       def changelog do
         @changelog
       end
 
-      @doc """
-      Returns a changelog using the given options.
-
-      ## Options
-        * `:version` - A specific version within the changelog.
-        * `:type` - A specific type within the specified version.
-        * `:formatter` - A module that adheres to the `Versioning.Changelog.Formatter` behaviour.
-        By default, `Versioning` includes the `Versioning.Changelog.Markdown` formatter.
-      """
       def changelog(opts) do
         Changelog.with_options(@changelog, opts)
       end
