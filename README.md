@@ -18,7 +18,7 @@ The package can be installed by adding `versioning` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:versioning, "~> 0.1.0"}
+    {:versioning, "~> 0.1.1"}
   ]
 end
 ```
