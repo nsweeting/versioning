@@ -65,7 +65,7 @@ defmodule MyAPI.Versioning.ArticleStatus do
     
     case status do
       "active" -> put_active(versioning, data, true)
-      "pending" -> put_active(versioning, data, true)
+      "archived" -> put_active(versioning, data, true)
       _ -> put_active(versioning, data, false)
     end
   end
