@@ -10,7 +10,7 @@ of steps from its current version to the target version. This technique is well
 described in the  article [APIs as infrastructure: future-proofing Stripe with versioning](https://stripe.com/blog/api-versioning).
 
 The basic rule is each API version in the schema must only ever concern itself with
-creating a set of change modules associated with the version ahead of it. This
+creating a set of change modules associated with the version below/above it. This
 contract ensures that we can continue to translate data to legacy versions without
 enormous effort.
 
