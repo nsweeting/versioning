@@ -54,6 +54,7 @@ defmodule Versioning.MixProject do
         "guides/Getting Started.md"
       ],
       source_url: "https://github.com/nsweeting/versioning",
+      source_url_pattern: "https://github.com/nsweeting/versioning/blob/master/%{path}#L%{line}",
       groups_for_modules: [
         Changelogs: [
           Versioning.Changelog,
