@@ -32,7 +32,7 @@ See [HexDocs](https://hexdocs.pm/versioning) for additional documentation.
 
 ## Example
 
-For a more in-depth example, please check out the [Getting Started](https://hexdocs.pm/versioning/getting_started.html) page.
+For a more in-depth example, please check out the [Getting Started](https://hexdocs.pm/versioning/getting-started.html) page.
 
 ```elixir
 # We build a schema to manipulate data in our API across different versions.
