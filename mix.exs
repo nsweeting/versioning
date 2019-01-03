@@ -1,7 +1,7 @@
 defmodule Versioning.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.2.0"
 
   def project do
     [
@@ -13,6 +13,7 @@ defmodule Versioning.MixProject do
       deps: deps(),
       description: description(),
       package: package(),
+      name: "Versioning",
       docs: docs()
     ]
   end
@@ -44,9 +45,22 @@ defmodule Versioning.MixProject do
 
   defp docs do
     [
-      extras: ["README.md"],
+      main: "Versioning",
+      source_ref: "v#{@version}",
+      canonical: "http://hexdocs.pm/versioning",
       main: "readme",
-      source_url: "https://github.com/nsweeting/versioning"
+      extras: [
+        "README.md",
+        "guides/Getting Started.md"
+      ],
+      source_url: "https://github.com/nsweeting/versioning",
+      groups_for_modules: [
+        Changelogs: [
+          Versioning.Changelog,
+          Versioning.Changelog.Formatter,
+          Versioning.Changelog.Markdown
+        ]
+      ]
     ]
   end
 
