@@ -5,6 +5,7 @@ defmodule Versioning.Changelog.Markdown do
 
   use Versioning.Changelog.Formatter
 
+  @impl Versioning.Changelog.Formatter
   @spec format(binary() | maybe_improper_list() | map()) :: binary()
   def format(list) when is_list(list) do
     Enum.reduce(list, "", fn item, result ->
