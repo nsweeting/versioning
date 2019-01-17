@@ -82,7 +82,7 @@ defmodule Versioning.Changelog do
 
   defp build_descriptions(changes) do
     Enum.reduce(changes, [], fn {change, _init}, descriptions ->
-      descriptions ++ [change.__description__()]
+      descriptions ++ [change.__change__(:desc)]
     end)
   end
 

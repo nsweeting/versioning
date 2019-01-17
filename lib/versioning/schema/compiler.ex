@@ -3,39 +3,41 @@ defmodule Versioning.Schema.Compiler do
 
   @doc false
   def build(env) do
+    schema = Module.get_attribute(env.module, :_schema)
+    adapter = Module.get_attribute(env.module, :adapter)
+
     schema_down =
-      env.module
-      |> Module.get_attribute(:_schema)
+      schema
       |> Enum.reverse()
-      |> Enum.reduce([], &do_build/2)
+      |> Enum.reduce([], &do_build(adapter, &1, &2))
       |> Enum.map(&escape_version/1)
       |> Enum.reverse()
 
     {schema_down, reverse(schema_down)}
   end
 
-  defp do_build({:version, version}, schema) do
-    case Version.parse(version) do
+  defp do_build(adapter, {:version, version}, schema) do
+    case Versioning.Adapter.parse(adapter, version) do
       {:ok, version} ->
-        validate_version!(schema, version)
+        validate_version!(schema, adapter, version)
         [{version, []} | schema]
 
       :error ->
         raise Versioning.CompileError, """
-        invalid version format.
+        invalid version format for #{inspect(adapter)}.
 
         version: #{inspect(version)}
         """
     end
   end
 
-  defp do_build({:type, type}, [{version, types} | schema]) do
+  defp do_build(_adapter, {:type, type}, [{version, types} | schema]) do
     validate_type!(types, type)
     types = types ++ [{type, []}]
     [{version, types} | schema]
   end
 
-  defp do_build({:change, change, init}, [{version, objects} | schema]) do
+  defp do_build(_adapter, {:change, change, init}, [{version, objects} | schema]) do
     [{object, changes} | objects] = Enum.reverse(objects)
     validate_change!(change)
     changes = changes ++ [{change, init}]
@@ -56,10 +58,10 @@ defmodule Versioning.Schema.Compiler do
     |> Enum.reverse()
   end
 
-  defp validate_version!(schema, version) do
+  defp validate_version!(schema, adapter, version) do
     improper_order =
       Enum.any?(schema, fn {current_version, _types} ->
-        case Version.compare(version, current_version) do
+        case Versioning.Adapter.compare(adapter, version, current_version) do
           :gt -> true
           _ -> false
         end
@@ -76,7 +78,7 @@ defmodule Versioning.Schema.Compiler do
     :ok
   end
 
-  defp validate_type!(types, type) when is_atom(type) do
+  defp validate_type!(types, type) when is_binary(type) do
     already_exists =
       Enum.member?(types, fn
         {current_type, _changes} -> current_type == type
@@ -96,7 +98,7 @@ defmodule Versioning.Schema.Compiler do
 
   defp validate_type!(_types, type) do
     raise Versioning.CompileError, """
-    expected type to be an atom.
+    expected type to be a string.
 
     type: #{inspect(type)}
     """

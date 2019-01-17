@@ -9,28 +9,32 @@ defmodule Versioning.Schema do
   ## Example
 
       defmodule MyApp.Versioning do
-        use Versioning.Schema
+        use Versioning.Schema, adapter: Versioning.Adapter.SemVer
 
         version("2.0.0", do: [])
 
         version "1.1.0" do
-          type User do
+          type "user" do
             change(MyApp.V1.User.SomeChange)
           end
         end
 
         version "1.0.1" do
-          type Post do
+          type "post" do
             change(MyApp.V1.Post.StatusChange)
           end
 
-          type Any do
-            change(MyApp.V1.Any.TimestampChange)
+          type "all!" do
+            change(MyApp.V1.All.TimestampChange)
           end
         end
 
         version("1.0.0", do: [])
       end
+
+  When creating a schema, an adapter must be specified. The adapter determines how
+  versions are parsed and compared. For more information on adapters, please see
+  `Versioning.Adapter`.
 
   In the example above, we have 4 versions. Our current version is represented by
   the top version - `"2.0.0"`. Our oldest version is at the bottom - `"1.0.0"`.
@@ -51,7 +55,7 @@ defmodule Versioning.Schema do
   data, current version, target version, as well as type. We can now run our
   versioning through our schema.
 
-      MyApp.Versioning.run(versioning)
+      {:ok, versioning} = MyApp.Versioning.run(versioning)
 
   With the above, our versioning struct will first be run through our MyApp.V1.PostStatusChange
   change module as the type matches our versioning type. It will then be run through
@@ -62,10 +66,7 @@ defmodule Versioning.Schema do
   can also transform it "up".
 
       post = %{"status" => "some_status"}
-      Versioning.new(post, "1.0.0", "2.0.0", Post)
-
-  Typically, when transforming "up", data is coming from external sources, so is
-  string-based maps. This should be considered when bulding our change modules.
+      Versioning.new(post, "1.0.0", "2.0.0", "post")
 
   If we were to run our new versioning through the schema, the same change modules
   would be run, but in reverse order.
@@ -76,13 +77,13 @@ defmodule Versioning.Schema do
   about creating change modules at the `Versioning.Change` documentation.
   """
 
-  alias Versioning.Schema.{Compiler, Executer}
+  @type t :: module()
 
   @type direction :: :up | :down
 
   @type change :: {atom(), list()}
 
-  @type type :: {atom(), [change()]}
+  @type type :: {binary(), [change()]}
 
   @type version :: {binary(), [type()]}
 
@@ -90,17 +91,21 @@ defmodule Versioning.Schema do
 
   @type result :: Versioning.t() | [Versioning.t()] | no_return()
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
+    adapter = Keyword.get(opts, :adapter)
+
+    unless adapter do
+      raise ArgumentError, "missing :adapter option on use Versioning.Schema"
+    end
+
     quote do
+      @adapter unquote(adapter)
+
       def run(versioning_or_versionings) do
-        Executer.run(__MODULE__, versioning_or_versionings)
+        Versioning.Schema.Executer.run(__MODULE__, versioning_or_versionings)
       end
 
-      def schema(direction) do
-        __schema__(direction)
-      end
-
-      import Versioning.Schema
+      import Versioning.Schema, only: [version: 2, type: 2, change: 1, change: 2]
 
       Module.register_attribute(__MODULE__, :_schema, accumulate: true)
 
@@ -138,21 +143,23 @@ defmodule Versioning.Schema do
   @doc """
   Defines a type within a version.
 
-  A type can only be represented once within a version, and must be an atom. Any
+  A type can only be represented once within a version, and must be a string. Any
   issue with this will raise a `Versioning.CompileError` during schema compilation.
 
+  Typically, it should be represented in `"CamelCase"` format.
+
   Any changes within a type that matches the type on a `Versioning` struct will
-  be run. There is also the special case `Any` type, which lets you define changes that
-  will be run against any versioning - regardless of type.
+  be run. There is also the special case `"all!"` type, which lets you define changes that
+  will be run against all versionings - regardless of type.
 
   ## Example
 
       version "1.0.1" do
-        type Any do
+        type "All!" do
 
         end
 
-        type Foo do
+        type "Foo" do
 
         end
       end
@@ -178,7 +185,7 @@ defmodule Versioning.Schema do
   ## Example
 
       version "1.0.1" do
-        type Foo do
+        type "Foo" do
           change(MyChangeModule)
           change(MyOtherChangeModule, [foo: :bar])
         end
@@ -191,19 +198,34 @@ defmodule Versioning.Schema do
   end
 
   defmacro __before_compile__(env) do
-    {schema_down, schema_up} = Compiler.build(env)
+    {schema_down, schema_up} = Versioning.Schema.Compiler.build(env)
+    latest = latest(schema_down)
 
     quote do
-      @schema_down unquote(schema_down)
-      @schema_up unquote(schema_up)
-
       def __schema__(:down) do
-        @schema_down
+        unquote(schema_down)
       end
 
       def __schema__(:up) do
-        @schema_up
+        unquote(schema_up)
+      end
+
+      def __schema__(:latest) do
+        unquote(latest) |> to_string()
+      end
+
+      def __schema__(:adapter) do
+        @adapter
       end
     end
+  end
+
+  @doc false
+  def latest([{version, _types} | _versions]) do
+    version
+  end
+
+  def latest(_schema) do
+    nil
   end
 end

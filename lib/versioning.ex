@@ -12,7 +12,8 @@ defmodule Versioning do
     - `:data` - The underlying data that we want to change. For structs, like our
     `Post`, be aware that we typically have our data as a bare map since it
     is easier to transform.
-    - `:changed` - A boolean representing whether a change operation has occured.
+    - `:changes` - A list of change modules that have been applied against the versioning.
+    The first change module would be the most revent module run.
     - `:assigns` - A map of arbitrary data we can use to store additonal information in.
 
   ## Example
@@ -30,42 +31,50 @@ defmodule Versioning do
   the `Versioning.Schema` documentation for more details.
   """
 
-  @type version :: Version.t() | binary() | nil
-  @type type :: atom() | nil
-  @type data :: map() | nil
+  @type version :: binary() | nil
+  @type type :: binary() | nil
+  @type data :: %{optional(binary()) => any()}
   @type assigns :: %{optional(atom()) => any()}
   @type t :: %__MODULE__{
-          current: Version.t() | nil,
-          target: Version.t() | nil,
+          current: version(),
+          target: version(),
           type: type(),
-          data: data(),
+          data: map(),
+          schema: Versioning.Schema.t(),
+          assigns: assigns(),
           changed: boolean(),
-          assigns: assigns()
+          changes: [Versioning.Change.t()]
         }
 
   defstruct [
     :current,
     :target,
+    :parsed_current,
+    :parsed_target,
     :type,
-    :data,
+    :schema,
+    data: %{},
+    assigns: %{},
     changed: false,
-    assigns: %{}
+    changes: []
   ]
 
   @doc """
   Creates a new versioning using the data provided.
 
   If a struct is the data, and no type is provided, the struct module is set as
-  the versioning `:type`, and the struct is turned into a map that is used for
-  the `:data`.
+  the versioning `:type` (as described in `put_type/2`), and the struct is turned
+  into a string-key map that is used for the `:data`.
 
   ## Examples
 
-      Versioning.new(%{}, "2.0.0", "1.0.0", SomeData)
-      Versioning.new(%SomeData{}, "2.0.0", "1.0.0")
+      # These are equivalent
+      Versioning.new(%{"foo" => "bar"}, "2.0.0", "1.0.0", SomeData)
+      Versioning.new(%{foo: "bar"}, "2.0.0", "1.0.0", "SomeData")
+      Versioning.new(%SomeData{foo: "bar"}, "2.0.0", "1.0.0")
 
   """
-  @spec new(data(), version(), version(), type()) :: Verisoning.t()
+  @spec new(map(), version(), version(), type()) :: Verisoning.t()
   def new(data \\ %{}, current \\ nil, target \\ nil, type \\ nil)
 
   def new(%{__struct__: struct_type} = data, current, target, type) do
@@ -92,9 +101,8 @@ defmodule Versioning do
       Versioning.put_current(versioning, "0.1.0")
 
   """
-
+  @spec put_current(Versioning.t(), version()) :: Versioning.t()
   def put_current(%Versioning{} = versioning, current) do
-    current = parse_version(current)
     %{versioning | current: current}
   end
 
@@ -112,7 +120,6 @@ defmodule Versioning do
   """
   @spec put_target(Versioning.t(), version()) :: Versioning.t()
   def put_target(%Versioning{} = versioning, target) do
-    target = parse_version(target)
     %{versioning | target: target}
   end
 
@@ -120,18 +127,35 @@ defmodule Versioning do
   Puts the type of the versioning data.
 
   Typically, if working with data that is associated with a struct, this will
-  be the struct module name.
+  be the struct trailing module name in binary format. For example,
+  `MyApp.Foo` will be represented as `"Foo"`.
 
   When running a versioning through a schema, only the changes that match the
   type set on the versioning will be run.
 
   ## Examples
 
-      Versioning.put_type(versioning, Article)
+      # These are equivalent
+      Versioning.put_type(versioning, "Post")
+      Versioning.put_type(versioning, MyApp.Post)
 
   """
-  @spec put_type(Versioning.t(), type()) :: Versioning.t()
-  def put_type(%Versioning{} = versioning, type) do
+  @spec put_type(Versioning.t(), type() | atom()) :: Versioning.t()
+  def put_type(%Versioning{} = versioning, nil) do
+    %{versioning | type: nil}
+  end
+
+  def put_type(%Versioning{} = versioning, type) when is_atom(type) do
+    type =
+      type
+      |> to_string()
+      |> String.split(".")
+      |> List.last()
+
+    put_type(versioning, type)
+  end
+
+  def put_type(%Versioning{} = versioning, type) when is_binary(type) do
     %{versioning | type: type}
   end
 
@@ -164,9 +188,9 @@ defmodule Versioning do
 
   ## Examples
 
-      iex> Versioning.pop_data(versioning, :a)
-      {1, versioning}
-      iex> Versioning.pop_data(versioning, :a)
+      iex> Versioning.pop_data(versioning, "foo")
+      {"bar", versioning}
+      iex> Versioning.pop_data(versioning, "foo")
       {nil, versioning}
 
   """
@@ -177,13 +201,55 @@ defmodule Versioning do
   end
 
   @doc """
+  Gets the value for a specific `key` in the `data` of `versioning`.
+
+  If `key` is present in `data` with value `value`, then `value` is returned.
+  Otherwise, `default` is returned (which is `nil` unless specified otherwise).
+
+  ## Examples
+
+      iex> Versioning.get_data(versioning, "foo")
+      "bar"
+      iex> Versioning.get_data(versioning, "bar")
+      nil
+      iex> Versioning.get_data(versioning, "bar", "baz")
+      "baz"
+
+  """
+  @spec get_data(Versioning.t(), binary(), term()) :: any()
+  def get_data(%Versioning{data: data}, key, default \\ nil) do
+    Map.get(data, key, default)
+  end
+
+  @doc """
+  Fetches the value for a specific `key` in the `data` of `versioning`.
+
+  If `data` contains the given `key` with value `value`, then `{:ok, value}` is
+  returned. If `data` doesn't contain `key`, `:error` is returned.
+
+  ## Examples
+
+      iex> Versioning.fetch_data(versioning, "foo")
+      {:ok, "bar"}
+      iex> Versioning.fetch_data(versioning, "bar")
+      :error
+
+  """
+  @spec fetch_data(Versioning.t(), binary()) :: {:ok, any()} | :error
+  def fetch_data(%Versioning{data: data}, key) do
+    Map.fetch(data, key)
+  end
+
+  @doc """
   Puts the full data in the versioning.
 
-  The data represents what will be modified when a versioning is run through a
-  schema.
+  The data represents the base of what will be modified when a versioning is
+  run through a schema.
 
   Data must be a map. If a struct is provided, the struct will be turned into
   a basic map - though its type information will not be inferred.
+
+  The keys of data will always be strings. If passed an
 
   ## Examples
 
@@ -193,12 +259,8 @@ defmodule Versioning do
 
   """
   @spec put_data(Versioning.t(), map()) :: Versioning.t()
-  def put_data(%Versioning{} = versioning, %{__struct__: _} = data) do
-    data = Map.from_struct(data)
-    %{versioning | data: data}
-  end
-
   def put_data(%Versioning{} = versioning, data) when is_map(data) do
+    data = deep_stringify(data)
     %{versioning | data: data}
   end
 
@@ -206,29 +268,31 @@ defmodule Versioning do
   Puts the given `value` under `key` within the `data` of `versioning`.
 
   ## Examples
-      iex> Versioning.put_data(versioning, :a, 1)
+      iex> Versioning.put_data(versioning, "a", 1)
       iex> versioning.data.a
       1
 
   """
-  @spec put_data(Versioning.t(), atom(), any()) :: Versioning.t()
-  def put_data(%Versioning{data: data} = versioning, key, value) when is_map(data) do
+  @spec put_data(Versioning.t(), binary(), any()) :: Versioning.t()
+  def put_data(%Versioning{data: data} = versioning, key, value)
+      when is_map(data) and is_binary(key) do
+    value = if is_map(value), do: deep_stringify(value), else: value
     %{versioning | data: Map.put(data, key, value)}
   end
 
-  defp parse_version(%Version{} = version) do
-    version
+  defp deep_stringify(%{__struct__: _} = struct) do
+    struct |> Map.from_struct() |> deep_stringify()
   end
 
-  defp parse_version(version) when is_binary(version) do
-    case Version.parse(version) do
-      {:ok, version} -> version
-      _ -> nil
-    end
-  end
+  defp deep_stringify(map) when is_map(map) do
+    Enum.reduce(map, %{}, fn
+      {key, val}, acc when is_map(val) ->
+        val = deep_stringify(val)
+        Map.put(acc, to_string(key), val)
 
-  defp parse_version(_version) do
-    nil
+      {key, val}, acc ->
+        Map.put(acc, to_string(key), val)
+    end)
   end
 
   defimpl Inspect do
@@ -241,7 +305,7 @@ defmodule Versioning do
           {attr, Map.get(versioning, attr)}
         end
 
-      surround_many("#Versioning<", list, ">", opts, fn
+      container_doc("#Versioning<", list, ">", opts, fn
         {:current, nil}, _opts -> concat("current: ", to_doc(nil, opts))
         {:current, current}, _opts -> concat("current: ", to_string(current))
         {:target, nil}, _opts -> concat("target: ", to_doc(nil, opts))

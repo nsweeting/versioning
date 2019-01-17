@@ -1,4 +1,4 @@
-defmodule Versioning.Changelog.Formatter do
+defmodule Versioning.Changelogs.Formatter do
   @moduledoc """
   Defines a versioning changelog formatter.
 
@@ -35,7 +35,7 @@ defmodule Versioning.Changelog.Formatter do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour Versioning.Changelog.Formatter
+      @behaviour Versioning.Changelogs.Formatter
     end
   end
 end

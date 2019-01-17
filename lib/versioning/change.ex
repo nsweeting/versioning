@@ -15,9 +15,9 @@ defmodule Versioning.Change do
 
         @impl Versioning.Change
         def down(versioning, _opts) do
-          case Versioning.pop_data(versioning, :status) do
-            {:active, versioning} -> Versioning.put_data(versioning, :active, true)
-            {_, versioning} -> Versioning.put_data(versioning, :active, false)
+          case Versioning.pop_data(versioning, "status") do
+            {:active, versioning} -> Versioning.put_data(versioning, "active", true)
+            {_, versioning} -> Versioning.put_data(versioning, "active", false)
           end
         end
 
@@ -78,9 +78,25 @@ defmodule Versioning.Change do
 
   defmacro __before_compile__(_env) do
     quote do
-      def __description__ do
+      def __change__(:desc) do
         @desc
       end
     end
+  end
+
+  @doc false
+  @spec up(Versioning.t(), atom(), any()) :: Versioning.t()
+  def up(versioning, change, opts) do
+    versioning |> change.up(opts) |> put_change(change)
+  end
+
+  @doc false
+  @spec down(Versioning.t(), atom(), any()) :: Versioning.t()
+  def down(versioning, change, opts) do
+    versioning |> change.down(opts) |> put_change(change)
+  end
+
+  defp put_change(versioning, change) do
+    %{versioning | changed: true, changes: [change | versioning.changes]}
   end
 end

@@ -56,10 +56,15 @@ defmodule Versioning.MixProject do
       source_url: "https://github.com/nsweeting/versioning",
       source_url_pattern: "https://github.com/nsweeting/versioning/blob/master/%{path}#L%{line}",
       groups_for_modules: [
+        Adapters: [
+          Versioning.Adapter,
+          Versioning.Adapters.SemVer,
+          Versioning.Adapters.Date
+        ],
         Changelogs: [
           Versioning.Changelog,
-          Versioning.Changelog.Formatter,
-          Versioning.Changelog.Markdown
+          Versioning.Changelogs.Formatter,
+          Versioning.Changelogs.Markdown
         ]
       ]
     ]
@@ -68,6 +73,7 @@ defmodule Versioning.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:plug, "~> 1.7", optional: true},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
