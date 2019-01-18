@@ -43,7 +43,7 @@ defmodule MyAPI.Versioning do
   version("1.2.0", do: [])
 
   version "1.1.0" do
-    type "Post do
+    type "Post" do
       change(MyAPI.V1.Post.StatusChange)
     end
   end
