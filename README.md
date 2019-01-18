@@ -34,23 +34,27 @@ See [HexDocs](https://hexdocs.pm/versioning) for additional documentation.
 
 For a more in-depth example, please check out the [Getting Started](https://hexdocs.pm/versioning/getting-started.html) page.
 
+We build a schema to describe updates to our API through versions, types, and changes.
+
 ```elixir
-# We build a schema to manipulate data in our API across different versions.
 defmodule MyAPI.Versioning do
   use Versioning.Schema
 
   version("1.2.0", do: [])
 
   version "1.1.0" do
-    type Post do
+    type "Post do
       change(MyAPI.V1.Post.StatusChange)
     end
   end
 
   version("1.0.0", do: [])
 end
+```
 
-# We build a change module to perform data modifications.
+We build a change module to perform data modifications.
+
+```elixir
 defmodule MyAPI.V1.Post.StatusChange do
   use Versioning.Change
 
@@ -59,9 +63,9 @@ defmodule MyAPI.V1.Post.StatusChange do
   """
 
   def down(versioning, _opts) do
-    case Versioning.pop_data(versioning, :status) do
-      {:active, versioning} -> Versioning.put_data(versioning, :active, true)
-      {_, versioning} -> Versioning.put_data(versioning, :active, false)
+    case Versioning.pop_data(versioning, "status") do
+      {:active, versioning} -> Versioning.put_data(versioning, "active", true)
+      {_, versioning} -> Versioning.put_data(versioning, "active", false)
     end
   end
 
@@ -73,12 +77,13 @@ defmodule MyAPI.V1.Post.StatusChange do
     end
   end
 end
+```
 
-# We create versionings to run against of schema. Here, we want to change our
-# post data from version 1.2.0 to 1.0.0
+We create versionings to run against our schema. Here, we want to change our
+post data from version 1.2.0 to 1.0.0. We can then run our versioning against
+the schema, which will return a modified versioning with our change modules run.
+
+```elixir
 versioning = Versioning.new(%Post{}, "1.2.0", "1.0.0")
-
-# We can then run our versioning against the schema, which will return a modified
-# versioning with our change modules run.
 MyAPI.Versioning.run(versioning)
 ```
