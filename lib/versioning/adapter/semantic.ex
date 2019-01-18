@@ -50,7 +50,8 @@ defmodule Versioning.Adapter.Semantic do
   Compares semantic based versions.
 
   Returns `:gt` if the first verison is greater than the second, and `:lt` for
-  vice-versa. If the two versions are equal, `:eq` is returned.
+  vice-versa. If the two versions are equal, `:eq` is returned. Returns `:error`
+  if the version cannot be parsed.
 
   ## Example
 
@@ -60,6 +61,8 @@ defmodule Versioning.Adapter.Semantic do
         :lt
         iex> Versioning.Adapter.Semantic.compare("1.0.1", "1.0.1")
         :eq
+        iex> Versioning.Adapter.Semantic.compare("foo", "bar")
+        :error
 
   """
   @impl Versioning.Adapter

@@ -64,7 +64,7 @@ defmodule MyAPI.V1.Post.StatusChange do
 
   def down(versioning, _opts) do
     case Versioning.pop_data(versioning, "status") do
-      {:active, versioning} -> Versioning.put_data(versioning, "active", true)
+      {"active", versioning} -> Versioning.put_data(versioning, "active", true)
       {_, versioning} -> Versioning.put_data(versioning, "active", false)
     end
   end

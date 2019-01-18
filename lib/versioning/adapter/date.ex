@@ -53,7 +53,8 @@ defmodule Versioning.Adapter.Date do
   Compares date based versions using ISO8601 formatting.
 
   Returns `:gt` if the first verison is greater than the second, and `:lt` for
-  vice-versa. If the two versions are equal, `:eq` is returned.
+  vice-versa. If the two versions are equal, `:eq` is returned. Returns `:error`
+  if the version cannot be parsed.
 
   ## Example
 
@@ -63,6 +64,8 @@ defmodule Versioning.Adapter.Date do
         :lt
         iex> Versioning.Adapters.Date.compare("2019-01-01", "2019-01-01")
         :eq
+        iex> Versioning.Adapters.Date.compare("foo", "bar")
+        :error
 
   """
   @impl Versioning.Adapter
