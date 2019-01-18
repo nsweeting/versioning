@@ -1,4 +1,4 @@
-defmodule Versioning.Adapters.Date do
+defmodule Versioning.Adapter.Date do
   @moduledoc """
   A versioning adapter for date-based versions.
 

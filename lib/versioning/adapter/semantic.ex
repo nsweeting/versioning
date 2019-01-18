@@ -1,14 +1,14 @@
-defmodule Versioning.Adapters.Semantic do
+defmodule Versioning.Adapter.Semantic do
   @moduledoc """
   A versioning adapter for semantic-based versions.
 
-  Under the hood, this adapter uses the `Version` module. . For details on the rules
+  Under the hood, this adapter uses the `Version` module. For details on the rules
   that are used for parsing and comparison, please see the `Version` module.
 
   ## Example
 
       defmodule MyApp.Versioning do
-        use Versioning.Schema, adapter: Versioning.Adapter.SemVer
+        use Versioning.Schema, adapter: Versioning.Adapter.Semantic
 
         version "1.0.0" do
           type "Post" do
@@ -26,9 +26,9 @@ defmodule Versioning.Adapters.Semantic do
 
   ## Example
 
-        iex> Versioning.Adapters.SemVer.parse("1.0.0")
+        iex> Versioning.Adapter.Semantic.parse("1.0.0")
         {:ok, #Version<1.0.0>}
-        iex> Versioning.Adapters.SemVer.parse("foo")
+        iex> Versioning.Adapter.Semantic.parse("foo")
         :error
 
   """
@@ -47,18 +47,18 @@ defmodule Versioning.Adapters.Semantic do
   end
 
   @doc """
-  Parses semantic based versions.
+  Compares semantic based versions.
 
   Returns `:gt` if the first verison is greater than the second, and `:lt` for
   vice-versa. If the two versions are equal, `:eq` is returned.
 
   ## Example
 
-        iex> Versioning.Adapters.SemVer.compare("1.0.1", "1.0.0")
+        iex> Versioning.Adapter.Semantic.compare("1.0.1", "1.0.0")
         :gt
-        iex> Versioning.Adapters.SemVer.compare("1.0.0", "1.0.1)
+        iex> Versioning.Adapter.Semantic.compare("1.0.0", "1.0.1)
         :lt
-        iex> Versioning.Adapters.SemVer.compare("1.0.1", "1.0.1")
+        iex> Versioning.Adapter.Semantic.compare("1.0.1", "1.0.1")
         :eq
 
   """

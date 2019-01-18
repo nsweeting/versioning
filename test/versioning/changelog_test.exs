@@ -5,7 +5,7 @@ defmodule Versioning.ChangelogTest do
 
   describe "build/2" do
     test "will return a changelog map of the schema" do
-      changelog = Changelog.build(SemVerSchema)
+      changelog = Changelog.build(SemanticSchema)
 
       assert changelog == [
                %{changes: [], version: "2.0.1"},
@@ -32,7 +32,7 @@ defmodule Versioning.ChangelogTest do
     end
 
     test "will return a specific version of the changelog with :version option" do
-      changelog = Changelog.build(SemVerSchema, version: "1.0.1")
+      changelog = Changelog.build(SemanticSchema, version: "1.0.1")
 
       assert changelog == %{
                changes: [
@@ -46,19 +46,19 @@ defmodule Versioning.ChangelogTest do
 
     test "will raise a Versioning.ChangelogError when given an invalid version" do
       assert_raise(Versioning.ChangelogError, fn ->
-        Changelog.build(SemVerSchema, version: "foo")
+        Changelog.build(SemanticSchema, version: "foo")
       end)
     end
 
     test "will return a specific version and type of the changelog with :version and :type option" do
-      changelog = Changelog.build(SemVerSchema, version: "1.0.1", type: "All!")
+      changelog = Changelog.build(SemanticSchema, version: "1.0.1", type: "All!")
 
       assert changelog == %{descriptions: ["5", "4"], type: "All!"}
     end
 
     test "will raise a Versioning.ChangelogError when give a :type without a :version" do
       assert_raise(Versioning.ChangelogError, fn ->
-        Changelog.build(SemVerSchema, type: "All!")
+        Changelog.build(SemanticSchema, type: "All!")
       end)
     end
   end

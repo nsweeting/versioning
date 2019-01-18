@@ -1,11 +1,11 @@
-defmodule Versioning.Changelogs.Markdown do
+defmodule Versioning.Changelog.Markdown do
   @moduledoc """
   Formats a changelog into a markdown version.
   """
 
-  use Versioning.Changelogs.Formatter
+  use Versioning.Changelog.Formatter
 
-  @impl Versioning.Changelogs.Formatter
+  @impl Versioning.Changelog.Formatter
   @spec format(binary() | maybe_improper_list() | map()) :: binary()
   def format(list) when is_list(list) do
     Enum.reduce(list, "", fn item, result ->

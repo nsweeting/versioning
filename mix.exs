@@ -58,13 +58,13 @@ defmodule Versioning.MixProject do
       groups_for_modules: [
         Adapters: [
           Versioning.Adapter,
-          Versioning.Adapters.SemVer,
-          Versioning.Adapters.Date
+          Versioning.Adapter.Semantic,
+          Versioning.Adapter.Date
         ],
         Changelogs: [
           Versioning.Changelog,
-          Versioning.Changelogs.Formatter,
-          Versioning.Changelogs.Markdown
+          Versioning.Changelog.Formatter,
+          Versioning.Changelog.Markdown
         ]
       ]
     ]

@@ -1,9 +1,9 @@
-defmodule SemanticSchema do
-  use Versioning.Schema, adapter: Versioning.Adapter.Semantic
+defmodule DateSchema do
+  use Versioning.Schema, adapter: Versioning.Adapter.Date
 
-  version("2.0.1", do: [])
+  version("2019-01-07", do: [])
 
-  version "2.0.0" do
+  version "2019-01-06" do
     type "All!" do
       change(TestChange15)
       change(TestChange14)
@@ -15,28 +15,28 @@ defmodule SemanticSchema do
     end
   end
 
-  version "1.1.1" do
+  version "2019-01-05" do
     type "All!" do
       change(TestChange11)
       change(TestChange10)
     end
   end
 
-  version "1.1.0" do
+  version "2019-01-04" do
     type "Bar" do
       change(TestChange9)
       change(TestChange8)
     end
   end
 
-  version "1.0.2" do
+  version "2019-01-03" do
     type "Foo" do
       change(TestChange7)
       change(TestChange6)
     end
   end
 
-  version "1.0.1" do
+  version "2019-01-02" do
     type "All!" do
       change(TestChange5)
       change(TestChange4)
@@ -52,5 +52,5 @@ defmodule SemanticSchema do
     end
   end
 
-  version("1.0.0", do: [])
+  version("2019-01-01", do: [])
 end

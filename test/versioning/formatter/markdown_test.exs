@@ -10,18 +10,18 @@ defmodule Versioning.Changelog.MarkdownTest do
 
   describe "format/1" do
     test "will format a full changelog" do
-      changelog = Changelog.build(SemVerSchema, formatter: Markdown)
+      changelog = Changelog.build(SemanticSchema, formatter: Markdown)
       assert is_binary(changelog)
     end
 
     test "will format a specific version" do
-      changelog = Changelog.build(SemVerSchema, version: "1.0.1", formatter: Markdown)
+      changelog = Changelog.build(SemanticSchema, version: "1.0.1", formatter: Markdown)
       assert is_binary(changelog)
     end
 
     test "will format a specific version and type" do
       changelog =
-        Changelog.build(SemVerSchema, version: "1.0.1", type: "All!", formatter: Markdown)
+        Changelog.build(SemanticSchema, version: "1.0.1", type: "All!", formatter: Markdown)
 
       assert is_binary(changelog)
     end
