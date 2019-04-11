@@ -2,8 +2,8 @@ defmodule Versioning.Schema do
   @moduledoc """
   Defines a versioning schema.
 
-  A versioning schema is used to translate data through a series of steps from
-  a "current" version to a "target" version. This is useful in maintaining backwards
+  A versioning schema is used to change data through a series of steps from a
+  "current" version to a "target" version. This is useful in maintaining backwards
   compatability with older versions of API's without enormous complication.
 
   ## Example

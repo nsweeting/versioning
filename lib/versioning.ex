@@ -1,6 +1,6 @@
 defmodule Versioning do
   @moduledoc """
-  Versionings allow data to be manipulated to different versions of itself.
+  Versionings allow data to be changed to different versions of itself.
 
   A the heart of our versioning is the `Versioning` struct. A `Versioning` struct
   contains the following fields:
