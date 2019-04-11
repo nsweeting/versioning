@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## [0.1.1] - 2018-11-11
 
 ### Added
+
 - `Versioning.Changelog` which documents a changelog for a `Versioning.Schema`.
 - `Versioning.Changelog.Formatter` behaviour which allows a bare changelog map to be formatted in custom ways.
 - `Versioning.Changelog.Markdown` formatter that turns a changelog into a markdown string.

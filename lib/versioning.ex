@@ -8,12 +8,13 @@ defmodule Versioning do
     - `:current` - The current version that our data represents.
     - `:target` - The version that we want our data to be changed into.
     - `:type` - The type of data we are working with. If we are working with structs,
-    this will typically be the struct name, eg: `Post`
+    this will typically be the struct name in string format, eg: `"Post"`
     - `:data` - The underlying data that we want to change. For structs, like our
     `Post`, be aware that we typically have our data as a bare map since it
     is easier to transform.
     - `:changes` - A list of change modules that have been applied against the versioning.
-    The first change module would be the most revent module run.
+    The first change module would be the most recent module run.
+    - `:changed` - A boolean representing if change modules have been applied.
     - `:assigns` - A map of arbitrary data we can use to store additonal information in.
 
   ## Example
@@ -253,9 +254,9 @@ defmodule Versioning do
 
   ## Examples
 
-      iex> versioning = Versioning.put_data(versioning, %{foo: :bar})
+      iex> versioning = Versioning.put_data(versioning, %{"foo" => "bar"})
       iex> versioning.data
-      %{foo: :bar}
+      %{"foo" => "bar"}
 
   """
   @spec put_data(Versioning.t(), map()) :: Versioning.t()
@@ -268,9 +269,9 @@ defmodule Versioning do
   Puts the given `value` under `key` within the `data` of `versioning`.
 
   ## Examples
-      iex> Versioning.put_data(versioning, "a", 1)
-      iex> versioning.data.a
-      1
+      iex> Versioning.put_data(versioning, "foo", "bar")
+      iex> versioning.data["foo"]
+      "bar"
 
   """
   @spec put_data(Versioning.t(), binary(), any()) :: Versioning.t()
@@ -278,6 +279,30 @@ defmodule Versioning do
       when is_map(data) and is_binary(key) do
     value = if is_map(value), do: deep_stringify(value), else: value
     %{versioning | data: Map.put(data, key, value)}
+  end
+
+  @doc """
+  Updates the `key` within the `data` of `versioning` using the given function.
+
+  If the `data` does not contain `key` - nothing occurs. If it does, the `fun`
+  is invoked with argument `value` and its result is used as the new value of
+  `key`.
+
+  ## Examples
+      iex> Versioning.update_data(versioning, "foo", fn _val -> "bar" end)
+      iex> versioning.data["foo"]
+      "bar"
+
+  """
+  @spec update_data(Versioning.t(), binary(), (any() -> any())) :: Versioning.t()
+  def update_data(%Versioning{} = versioning, key, fun)
+      when is_binary(key) and is_function(fun, 1) do
+    if Map.has_key?(versioning.data, key) do
+      val = fun.(versioning.data[key])
+      put_data(versioning, key, val)
+    else
+      versioning
+    end
   end
 
   defp deep_stringify(%{__struct__: _} = struct) do
@@ -301,16 +326,15 @@ defmodule Versioning do
     @doc false
     def inspect(versioning, opts) do
       list =
-        for attr <- [:current, :target, :type, :changed] do
+        for attr <- [:type, :current, :target, :data, :changed] do
           {attr, Map.get(versioning, attr)}
         end
 
       container_doc("#Versioning<", list, ">", opts, fn
-        {:current, nil}, _opts -> concat("current: ", to_doc(nil, opts))
-        {:current, current}, _opts -> concat("current: ", to_string(current))
-        {:target, nil}, _opts -> concat("target: ", to_doc(nil, opts))
-        {:target, target}, _opts -> concat("target: ", to_string(target))
         {:type, type}, opts -> concat("type: ", to_doc(type, opts))
+        {:current, current}, _opts -> concat("current: ", to_doc(current, opts))
+        {:target, target}, _opts -> concat("target: ", to_doc(target, opts))
+        {:data, data}, opts -> concat("data: ", to_doc(data, opts))
         {:changed, changed}, _opts -> concat("changed: ", to_doc(changed, opts))
       end)
     end

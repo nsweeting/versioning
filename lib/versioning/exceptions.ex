@@ -1,8 +1,8 @@
-defmodule Versioning.CompileError do
+defmodule VersioningError do
   defexception [:message]
 end
 
-defmodule Versioning.ExecutionError do
+defmodule Versioning.CompileError do
   defexception [:message]
 end
 

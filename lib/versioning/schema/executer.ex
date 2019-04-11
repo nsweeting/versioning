@@ -31,20 +31,20 @@ defmodule Versioning.Schema.Executer do
 
   defp do_run(
          direction,
-         [{version, types} | _schema],
+         [{version, _raw_version, types} | _schema],
          %Versioning{parsed_target: target} = versioning
        )
        when target == version do
     {:ok, do_run_types(direction, types, versioning)}
   end
 
-  defp do_run(direction, [{_version, types} | schema], versioning) do
+  defp do_run(direction, [{_version, _raw_version, types} | schema], versioning) do
     versioning = do_run_types(direction, types, versioning)
     do_run(direction, schema, versioning)
   end
 
   defp do_run(_direction, [], _versioning) do
-    {:error, %Versioning.ExecutionError{message: "no matching version found in schema."}}
+    {:error, %VersioningError{message: "no matching version found in schema."}}
   end
 
   defp do_run_types(_direction, [], versioning) do
@@ -81,16 +81,16 @@ defmodule Versioning.Schema.Executer do
          {:ok, current} <- Versioning.Adapter.parse(adapter, versioning.current) do
       {:ok, target, current}
     else
-      _ -> {:error, %Versioning.ExecutionError{message: "invalid versions provided."}}
+      _ -> {:error, %VersioningError{message: "invalid versions provided."}}
     end
   end
 
   defp locate_current(schema, version) do
     schema
-    |> Enum.drop_while(fn {v, _} -> version != v end)
+    |> Enum.drop_while(fn {v, _, _} -> version != v end)
     |> case do
       [] ->
-        {:error, %Versioning.ExecutionError{message: "current version not found in schema."}}
+        {:error, %VersioningError{message: "current version not found in schema."}}
 
       [_ | schema] ->
         {:ok, schema}

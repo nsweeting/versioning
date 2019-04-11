@@ -61,13 +61,13 @@ defmodule Versioning.Changelog do
   end
 
   defp do_build(schema) do
-    Enum.reduce(schema.__schema__(:down), [], fn {version, types}, changelog ->
-      add_version(changelog, version, types)
+    Enum.reduce(schema.__schema__(:down), [], fn {_version, raw_version, types}, changelog ->
+      add_version(changelog, raw_version, types)
     end)
   end
 
-  defp add_version(changelog, version, types) do
-    changelog ++ [%{version: to_string(version), changes: build_changes(types)}]
+  defp add_version(changelog, raw_version, types) do
+    changelog ++ [%{version: raw_version, changes: build_changes(types)}]
   end
 
   defp build_changes(types) do
