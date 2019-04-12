@@ -44,7 +44,7 @@ Lets create of first "versioning change". This is a module that adheres to the
 and `down/2`.
 
 ```elixir
-defmodule MyAPI.V1.Post.StatusChange do
+defmodule MyAPI.Changes.PostStatusChange do
   use Versioning.Change
 
   @desc """
@@ -89,8 +89,8 @@ defmodule MyAPI.Versioning do
   version("2.0.0", do: [])
 
   version "1.1.0" do
-    type Post do
-      change(MyAPI.V2.Post.StatusChange)
+    type "Post" do
+      change(MyAPI.Changes.PostStatusChange)
     end
   end
   

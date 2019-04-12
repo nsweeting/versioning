@@ -1,7 +1,7 @@
 defmodule Versioning.MixProject do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.0"
 
   def project do
     [
@@ -51,7 +51,8 @@ defmodule Versioning.MixProject do
       main: "readme",
       extras: [
         "README.md",
-        "guides/Getting Started.md"
+        "guides/Getting Started.md",
+        "guides/Phoenix Usage.md"
       ],
       source_url: "https://github.com/nsweeting/versioning",
       source_url_pattern: "https://github.com/nsweeting/versioning/blob/master/%{path}#L%{line}",
@@ -65,6 +66,11 @@ defmodule Versioning.MixProject do
           Versioning.Changelog,
           Versioning.Changelog.Formatter,
           Versioning.Changelog.Markdown
+        ],
+        Phoenix: [
+          Versioning.Controller,
+          Versioning.Plug,
+          Versioning.View
         ]
       ]
     ]
@@ -73,7 +79,8 @@ defmodule Versioning.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:plug, "~> 1.7", optional: true},
+      {:phoenix, "~> 1.4", optional: true},
+      {:poison, "~> 3.1", optional: true},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end

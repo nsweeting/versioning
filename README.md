@@ -44,7 +44,7 @@ defmodule MyAPI.Versioning do
 
   version "1.1.0" do
     type "Post" do
-      change(MyAPI.V1.Post.StatusChange)
+      change(MyAPI.Changes.PostStatusChange)
     end
   end
 
@@ -55,7 +55,7 @@ end
 We build a change module to perform data modifications.
 
 ```elixir
-defmodule MyAPI.V1.Post.StatusChange do
+defmodule MyAPI.Changes.PostStatusChange do
   use Versioning.Change
 
   @desc """
@@ -87,3 +87,7 @@ the schema, which will return a modified versioning with our change modules run.
 versioning = Versioning.new(%Post{}, "1.2.0", "1.0.0")
 MyAPI.Versioning.run(versioning)
 ```
+
+## Phoenix Usage
+
+Versioning provides extensive support for usage with Phoenix. Checkout the [Phoenix Usage](https://hexdocs.pm/versioning/phoenix-usage.html) page for more details.
