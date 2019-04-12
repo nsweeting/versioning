@@ -87,3 +87,7 @@ the schema, which will return a modified versioning with our change modules run.
 versioning = Versioning.new(%Post{}, "1.2.0", "1.0.0")
 MyAPI.Versioning.run(versioning)
 ```
+
+## Phoenix Usage
+
+Versioning provides extensive support for usage with Phoenix. Checkout the [Phoenix Usage](https://hexdocs.pm/versioning/phoenix-usage.html) page for more details.
