@@ -15,17 +15,17 @@ defmodule Versioning.Schema do
 
         version "1.1.0" do
           type "User" do
-            change(MyApp.V1.User.SomeChange)
+            change(MyApp.Changes.SomeUserChange)
           end
         end
 
         version "1.0.1" do
           type "Post" do
-            change(MyApp.V1.Post.StatusChange)
+            change(MyApp.Changes.SomePostChange))
           end
 
           type "All!" do
-            change(MyApp.V1.All.TimestampChange)
+            change(MyApp.Changes.SomeAllChange)
           end
         end
 
@@ -57,9 +57,9 @@ defmodule Versioning.Schema do
 
       {:ok, versioning} = MyApp.Versioning.run(versioning)
 
-  With the above, our versioning struct will first be run through our MyApp.V1.PostStatusChange
+  With the above, our versioning struct will first be run through our MyApp.Changes.SomePostChange
   change module as the type matches our versioning type. It will then be run through
-  our MyApp.V1.TimestampChange as it also matches on the `"All!` type (more detail
+  our MyApp.Changes.SomeAllChange as it also matches on the `"All!` type (more detail
   available at the `change/2` macro).
 
   With the above, we are transforming our data "down" through our schema. But we
@@ -75,6 +75,30 @@ defmodule Versioning.Schema do
 
   At the heart of versioning schemas are change modules. You can find more information
   about creating change modules at the `Versioning.Change` documentation.
+
+  ## Schema attributes
+
+  Supported attributes for configuring the defined schema. They must be
+  set after the `use Versioning.Schema` call.
+
+  These attributes are:
+
+    * `@latest` - configures the schema latest version. By default, this will
+      be the version at the top of your schema. But if you do not wish to have
+      this behaviour, you can set it here.
+
+
+  ## Reflection
+
+  Any schema module will generate the `__schema__` function that can be
+  used for runtime introspection of the schema:
+
+  * `__schema__(:down)` - Returns the data structure representing a downward versioning.
+  * `__schema__(:up)` - Returns the data structure representing an upward versioning.
+  * `__schema__(:adapter)` - Returns the versioning adapter used by the schema.
+  * `__schema__(:latest, :string)` - Returns the latest version in string format.
+  * `__schema__(:latest, :parsed)` - Returns the latest version in parsed format.
+
   """
 
   @type t :: module()

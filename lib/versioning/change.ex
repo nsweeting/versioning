@@ -8,7 +8,7 @@ defmodule Versioning.Change do
 
   ## Example
 
-      defmodule MyApp.V1.Post.StatusChange do
+      defmodule MyApp.Cheanges.PostStatusChange do
         use Versioning.Change
 
         @desc "The 'active' attribute has been changed in favour of the 'status' attribute"
