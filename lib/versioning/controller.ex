@@ -1,10 +1,57 @@
 if Code.ensure_loaded?(Plug) do
   defmodule Versioning.Controller do
     @moduledoc """
-    A set of functions typically used with `Phoenix` controllers.
-    """
+    A set of functions used with `Phoenix` controllers.
 
-    import Plug.Conn, only: [put_private: 3, get_req_header: 2]
+    Typically, this module should be imported into your controller modules. In a normal
+    phoenix application, this can usually be done with the following:
+
+        defmodule YourAppWeb do
+        # ...
+
+          def controller do
+            quote do
+              use Phoenix.Controller, namespace: MyAppWeb
+
+              # ...
+
+              import Versioning.Controller
+
+              # ...
+            end
+          end
+        end
+
+    Please see the documentation at `Phoenix.Controller` for details on how to
+    set up a typical controller.
+
+    This module is mainly used to convert raw params from the version that the
+    request data represents, to the latest version that your "context" application
+    expects.
+
+    ## Example
+
+    Below is an example of how to use versioning in a typical controller:
+
+        defmodule MyController do
+          use MyAppWeb, :controller
+
+          plug Versioning.Plug, schema: MyVersioningSchema
+
+          def update(conn, %{"id" => id, "user" => params}) do
+            with {:ok, params} <- params_version(conn, params, "User"),
+                 {:ok, user} <- Blog.fetch_user(id),
+                 {:ok, user} <- Blog.update_user(user) do
+              render(conn, "show.json", user: user)
+            end
+          end
+        end
+
+    The `params_version/3` function accepts a conn, a set of params representing
+    whatever version of the data the user uses, as well as the type of the data.
+    It will run the params through your schema, returning the results.
+
+    """
 
     @doc """
     Stores the schema for versioning.
@@ -16,7 +63,7 @@ if Code.ensure_loaded?(Plug) do
     """
     @spec put_schema(Plug.Conn.t(), Versioning.Schema.t()) :: Plug.Conn.t()
     def put_schema(conn, schema) when is_atom(schema) do
-      put_private(conn, :versioning_schema, schema)
+      Plug.Conn.put_private(conn, :versioning_schema, schema)
     end
 
     @doc """
@@ -63,7 +110,7 @@ if Code.ensure_loaded?(Plug) do
     """
     @spec put_version(Plug.Conn.t(), binary()) :: Plug.Conn.t()
     def put_version(conn, version) do
-      put_private(conn, :versioning_version, version)
+      Plug.Conn.put_private(conn, :versioning_version, version)
     end
 
     @doc """
@@ -117,7 +164,7 @@ if Code.ensure_loaded?(Plug) do
     end
 
     defp get_version(conn, header, fallback) do
-      case get_req_header(conn, header) do
+      case Plug.Conn.get_req_header(conn, header) do
         [version] ->
           version
 

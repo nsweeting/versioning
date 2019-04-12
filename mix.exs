@@ -51,7 +51,8 @@ defmodule Versioning.MixProject do
       main: "readme",
       extras: [
         "README.md",
-        "guides/Getting Started.md"
+        "guides/Getting Started.md",
+        "guides/Phoenix Usage.md"
       ],
       source_url: "https://github.com/nsweeting/versioning",
       source_url_pattern: "https://github.com/nsweeting/versioning/blob/master/%{path}#L%{line}",
@@ -65,6 +66,11 @@ defmodule Versioning.MixProject do
           Versioning.Changelog,
           Versioning.Changelog.Formatter,
           Versioning.Changelog.Markdown
+        ],
+        Phoenix: [
+          Versioning.Controller,
+          Versioning.Plug,
+          Versioning.View
         ]
       ]
     ]
