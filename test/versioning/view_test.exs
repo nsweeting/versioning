@@ -9,13 +9,13 @@ defmodule Versioning.ViewTest do
 
     def render("index.json", %{conn: conn, foos: foos}) do
       %{
-        foos: render_versions(conn, "Foo", foos, MyView, "foo.json")
+        foos: render_versions(conn, foos, "Foo", MyView, "foo.json")
       }
     end
 
     def render("show.json", %{conn: conn, foo: foo}) do
       %{
-        foo: render_version(conn, "Foo", foo, MyView, "foo.json")
+        foo: render_version(conn, foo, "Foo", MyView, "foo.json")
       }
     end
 

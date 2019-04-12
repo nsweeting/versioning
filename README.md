@@ -44,7 +44,7 @@ defmodule MyAPI.Versioning do
 
   version "1.1.0" do
     type "Post" do
-      change(MyAPI.V1.Post.StatusChange)
+      change(MyAPI.Changes.PostStatusChange)
     end
   end
 
@@ -55,7 +55,7 @@ end
 We build a change module to perform data modifications.
 
 ```elixir
-defmodule MyAPI.V1.Post.StatusChange do
+defmodule MyAPI.Changes.PostStatusChange do
   use Versioning.Change
 
   @desc """

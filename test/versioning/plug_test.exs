@@ -29,7 +29,7 @@ defmodule Versioning.PlugTest do
         |> put_req_header("x-api-version", "1.0.0")
         |> Versioning.Plug.call(opts)
 
-      assert conn.private.versioning_request == "1.0.0"
+      assert conn.private.versioning_version == "1.0.0"
     end
 
     test "will use custom headers for the version request" do
@@ -40,7 +40,7 @@ defmodule Versioning.PlugTest do
         |> put_req_header("x-version", "1.0.0")
         |> Versioning.Plug.call(opts)
 
-      assert conn.private.versioning_request == "1.0.0"
+      assert conn.private.versioning_version == "1.0.0"
     end
 
     test "will default to the latest version if no header or fallback is present" do
@@ -50,7 +50,7 @@ defmodule Versioning.PlugTest do
         conn(:get, "/")
         |> Versioning.Plug.call(opts)
 
-      assert conn.private.versioning_request == "2.0.1"
+      assert conn.private.versioning_version == "2.0.1"
     end
 
     test "will use the fallback module function if provided" do
@@ -66,7 +66,7 @@ defmodule Versioning.PlugTest do
         conn(:get, "/")
         |> Versioning.Plug.call(opts)
 
-      assert conn.private.versioning_request == "1.0.0"
+      assert conn.private.versioning_version == "1.0.0"
     end
   end
 end

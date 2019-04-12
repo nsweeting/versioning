@@ -1,7 +1,29 @@
-if Code.ensure_loaded?(Phoenix.View) do
+if Code.ensure_loaded?(Phoenix) do
   defmodule Versioning.View do
+    @moduledoc """
+    A set of functions typically used with `Phoenix` views.
+
+
+    """
+
+    @doc """
+    Renders a versioned collection.
+
+    A collection is any enumerable of structs. This function returns the
+    rendered versioned collection in a list:
+
+        render_versions(conn, users, "User", UserView, "show.json")
+
+    Under the hood, this will render each item using `Phoenix.View.render/3` - so
+    the latest version of the data should be represented in your view using typical
+    view standards.
+
+    After the data has been rendered, it will be passed to your schema and
+    versioned to the version that has been requested.
+
+    """
     @spec render_versions(Plug.Conn.t(), binary(), list(), module(), binary(), map()) :: [any()]
-    def render_versions(conn, type, collection, view, template, assigns \\ %{}) do
+    def render_versions(conn, collection, type, view, template, assigns \\ %{}) do
       assigns = to_map(assigns)
       {schema, current, target} = get_versioning(conn)
 
@@ -10,11 +32,26 @@ if Code.ensure_loaded?(Phoenix.View) do
       end)
     end
 
+    @doc """
+    Renders a single versioned item if not nil.
+
+        render_version(conn, user, "User", UserView, "show.json")
+
+    This require
+
+    Under the hood, this will render the item using `Phoenix.View.render/3` - so
+    the latest version of the data should be represented in your view using typical
+    view standards.
+
+    After the data has been rendered, it will be passed to your schema and
+    versioned to requested target version.
+
+    """
     @spec render_version(Plug.Conn.t(), binary(), any(), module(), binary(), map()) :: any()
     def render_version(conn, type, resource, view, template, assigns \\ %{})
     def render_version(_conn, _type, nil, _view, _template, _assigns), do: nil
 
-    def render_version(conn, type, resource, view, template, assigns) do
+    def render_version(conn, resource, type, view, template, assigns) do
       assigns = to_map(assigns)
       {schema, current, target} = get_versioning(conn)
       do_versioning(schema, current, target, type, resource, view, template, assigns)
@@ -28,16 +65,6 @@ if Code.ensure_loaded?(Phoenix.View) do
       Map.put(assigns, as, resource)
     end
 
-    defp get_schema(conn) do
-      conn.private.versioning_schema ||
-        raise ArgumentError, "expected versioning schema to be available in conn"
-    end
-
-    defp get_target(conn) do
-      conn.private.versioning_request ||
-        raise ArgumentError, "expected versioning request to be available in conn"
-    end
-
     defp do_versioning(schema, current, target, type, resource, view, template, assigns) do
       data = Phoenix.View.render(view, template, assign_resource(assigns, view, resource))
       versioning = Versioning.new(data, current, target, type)
@@ -49,9 +76,9 @@ if Code.ensure_loaded?(Phoenix.View) do
     end
 
     defp get_versioning(conn) do
-      schema = get_schema(conn)
+      schema = Versioning.Controller.fetch_schema!(conn)
       current = schema.__schema__(:latest, :string)
-      target = get_target(conn)
+      target = Versioning.Controller.fetch_version!(conn)
 
       {schema, current, target}
     end
