@@ -7,7 +7,7 @@ Versioning provides a way for API's to remain backward compatible without the he
 
 This is done through use of a "versioning schema" that translates data through a series
 of steps from its current version to the target version. This technique is well
-described in the  article [APIs as infrastructure: future-proofing Stripe with versioning](https://stripe.com/blog/api-versioning).
+described in the article [APIs as infrastructure: future-proofing Stripe with versioning](https://stripe.com/blog/api-versioning).
 
 The basic rule is each API version in the schema must only ever concern itself with
 creating a set of change modules associated with the version below/above it. This
@@ -21,7 +21,7 @@ The package can be installed by adding `versioning` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:versioning, "~> 0.3"}
+    {:versioning, "~> 0.4"}
   ]
 end
 ```
