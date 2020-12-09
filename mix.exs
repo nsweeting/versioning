@@ -81,7 +81,7 @@ defmodule Versioning.MixProject do
     [
       {:phoenix, "~> 1.5", optional: true},
       {:poison, "~> 3.1", optional: true},
-      {:ex_doc, ">= 0.0.0", only: :dev}
+      {:ex_doc, "~> 0.23", only: :dev, runtime: false}
     ]
   end
 end
