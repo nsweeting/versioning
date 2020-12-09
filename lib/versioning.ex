@@ -32,6 +32,20 @@ defmodule Versioning do
   the `Versioning.Schema` documentation for more details.
   """
 
+  @derive {Inspect, only: [:type, :current, :target, :data, :changed]}
+  defstruct [
+    :current,
+    :target,
+    :parsed_current,
+    :parsed_target,
+    :type,
+    :schema,
+    data: %{},
+    assigns: %{},
+    changed: false,
+    changes: []
+  ]
+
   @type version :: binary() | nil
   @type type :: binary() | nil
   @type data :: %{optional(binary()) => any()}
@@ -46,19 +60,6 @@ defmodule Versioning do
           changed: boolean(),
           changes: [Versioning.Change.t()]
         }
-
-  defstruct [
-    :current,
-    :target,
-    :parsed_current,
-    :parsed_target,
-    :type,
-    :schema,
-    data: %{},
-    assigns: %{},
-    changed: false,
-    changes: []
-  ]
 
   @doc """
   Creates a new versioning using the data provided.
@@ -318,25 +319,5 @@ defmodule Versioning do
       {key, val}, acc ->
         Map.put(acc, to_string(key), val)
     end)
-  end
-
-  defimpl Inspect do
-    import Inspect.Algebra
-
-    @doc false
-    def inspect(versioning, opts) do
-      list =
-        for attr <- [:type, :current, :target, :data, :changed] do
-          {attr, Map.get(versioning, attr)}
-        end
-
-      container_doc("#Versioning<", list, ">", opts, fn
-        {:type, type}, opts -> concat("type: ", to_doc(type, opts))
-        {:current, current}, _opts -> concat("current: ", to_doc(current, opts))
-        {:target, target}, _opts -> concat("target: ", to_doc(target, opts))
-        {:data, data}, opts -> concat("data: ", to_doc(data, opts))
-        {:changed, changed}, _opts -> concat("changed: ", to_doc(changed, opts))
-      end)
-    end
   end
 end
