@@ -79,7 +79,7 @@ defmodule Versioning.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:phoenix, "~> 1.4", optional: true},
+      {:phoenix, "~> 1.5", optional: true},
       {:poison, "~> 3.1", optional: true},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]

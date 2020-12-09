@@ -111,7 +111,8 @@ defmodule Versioning.Schema.Compiler do
 
   defp validate_change!(change) when is_atom(change) do
     try do
-      change.module_info[:attributes]
+      change.module_info()
+      |> Keyword.get(:attributes, [])
       |> Keyword.get(:behaviour, [])
       |> Enum.member?(Versioning.Change)
       |> case do

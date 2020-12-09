@@ -92,7 +92,7 @@ if Code.ensure_loaded?(Phoenix) do
     versioned to the version that has been requested.
 
     """
-    @spec render_versions(Plug.Conn.t(), binary(), list(), module(), binary(), map()) :: [any()]
+    @spec render_versions(Plug.Conn.t(), list(), binary(), module(), binary(), map()) :: [any()]
     def render_versions(conn, collection, type, view, template, assigns \\ %{}) do
       assigns = to_map(assigns)
       {schema, current, target} = get_versioning(conn)
@@ -117,7 +117,7 @@ if Code.ensure_loaded?(Phoenix) do
     versioned to requested target version.
 
     """
-    @spec render_version(Plug.Conn.t(), binary(), any(), module(), binary(), map()) :: any()
+    @spec render_version(Plug.Conn.t(), any(), binary(), module(), binary(), map()) :: any()
     def render_version(conn, resource, type, view, template, assigns \\ %{})
     def render_version(_conn, _type, nil, _view, _template, _assigns), do: nil
 
