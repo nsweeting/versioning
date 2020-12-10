@@ -46,7 +46,7 @@ if Code.ensure_loaded?(Phoenix) do
             }
           end
 
-          def render("show.json", %{conn: conn, user: user}) do
+          def render("show.json", %{conn: conn, users: users}) do
             %{
               "user" => render_version(conn, users, "User", UserView, "user.json"),
             }
@@ -94,11 +94,9 @@ if Code.ensure_loaded?(Phoenix) do
     """
     @spec render_versions(Plug.Conn.t(), list(), binary(), module(), binary(), map()) :: [any()]
     def render_versions(conn, collection, type, view, template, assigns \\ %{}) do
-      assigns = to_map(assigns)
-      {schema, current, target} = get_versioning(conn)
-
       Enum.map(collection, fn resource ->
-        do_versioning(schema, current, target, type, resource, view, template, assigns)
+        data = Phoenix.View.render_one(resource, view, template, assigns)
+        do_versioning(conn, data, type)
       end)
     end
 
@@ -122,21 +120,12 @@ if Code.ensure_loaded?(Phoenix) do
     def render_version(_conn, _type, nil, _view, _template, _assigns), do: nil
 
     def render_version(conn, resource, type, view, template, assigns) do
-      assigns = to_map(assigns)
+      data = Phoenix.View.render_one(resource, view, template, assigns)
+      do_versioning(conn, data, type)
+    end
+
+    defp do_versioning(conn, data, type) do
       {schema, current, target} = get_versioning(conn)
-      do_versioning(schema, current, target, type, resource, view, template, assigns)
-    end
-
-    defp to_map(assigns) when is_map(assigns), do: assigns
-    defp to_map(assigns) when is_list(assigns), do: :maps.from_list(assigns)
-
-    defp assign_resource(assigns, view, resource) do
-      as = Map.get(assigns, :as) || view.__resource__
-      Map.put(assigns, as, resource)
-    end
-
-    defp do_versioning(schema, current, target, type, resource, view, template, assigns) do
-      data = Phoenix.View.render(view, template, assign_resource(assigns, view, resource))
       versioning = Versioning.new(data, current, target, type)
 
       case schema.run(versioning) do
